@@ -58,9 +58,19 @@ sub.ReceiveSettings.MaxOutstandingMessages = 1000  // Message buffer
 Pub/Sub automatically load-balances across multiple consumer instances:
 
 
-#### 2. **Database Choice**
+#### 3. **Database Choice**
 
 DynamoDB was chosen for its ability to scale horizontally through partition-based consistent hashing, where each partition operates independently to handle massive write throughput without coordination overhead. The composite primary key (`ip#port#service`) ensures even data distribution across partitions, preventing hot spots while DynamoDB's native conditional write expressions satisfy the requirement for timestamp-based updates, rejecting stale data atomically without application-level locking.
+
+Notes:
+
+DynamoDB does have two main drawbacks.
+First, DynamoDB is AWS specific which means this project uses both GPC and AWS.
+Second, DynamoDB can be fairly expensive and would likely need to be used with provisioned capacity mode for cost savings.
+
+Good scalable alternatives would be:
+
+Cassandra, ScyllaDB, and Bigtable.
 
 ## Quick Start
 
@@ -83,6 +93,23 @@ make run-consumer
 #   --project test-project --subscription scan-sub --consumers 10 --max-outstanding 1000
 # Override args: make run-consumer ARGS="--project myproject --consumers 20"
 ```
+
+Example output from the consumer:
+
+```bash
+Concurrent consumers: 10, Max outstanding messages: 1000
+Consumer started, waiting for messages...
+scan result stored: &{IP:1.1.1.116 Port:31982 Service:SSH Timestamp:1763253174 Response:service response: 31 DataVersion:1}
+scan result stored: &{IP:1.1.1.34 Port:21346 Service:HTTP Timestamp:1763253175 Response:service response: 73 DataVersion:2}
+scan result stored: &{IP:1.1.1.80 Port:37431 Service:SSH Timestamp:1763253176 Response:service response: 42 DataVersion:2}
+scan result stored: &{IP:1.1.1.99 Port:62469 Service:SSH Timestamp:1763253177 Response:service response: 44 DataVersion:1}
+scan result stored: &{IP:1.1.1.134 Port:37925 Service:HTTP Timestamp:1763253178 Response:service response: 59 DataVersion:1}
+scan result stored: &{IP:1.1.1.53 Port:12585 Service:SSH Timestamp:1763253179 Response:service response: 58 DataVersion:2}
+```
+
+This project includes basic unit testing and integration testing.
+
+The integration tests test handling out of order messaging and testing each scan result is stored separately.
 
 **Testing**
 ```bash
