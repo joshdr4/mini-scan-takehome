@@ -1,0 +1,6 @@
+PUBSUB_EMULATOR_HOST=localhost:8085 go run main.go consumer --project test-project --subscription scan-sub --consumers 10 --max-outstanding 1000
+
+
+docker-compose up
+
+docker-compose -f docker-compose.dynamo.yml up
